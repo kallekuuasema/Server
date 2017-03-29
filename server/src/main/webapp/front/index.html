@@ -1,14 +1,28 @@
 <!doctype html>
-<html>
+<html ng-app="scoreList">
 <head>
 <title>server front end</title>
 <link rel="stylesheet" type="text/css" href="/stylesheets/styles.css">
-</head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
 <script src="index.js"></script>
-<body>
-  <p>Hello world!</p>
-  <p>
-  <button onclick="myFunction()">What is the time?</button>
-  </p>
+
+</head>
+<body>	
+	<div ng-controller="scoreListController as scoreList">
+		<button ng-click="scoreList.loadPlayer()">Load player</button>
+		<form>
+		<input id="playerName" type="text"></input>
+		</form>
+		<button ng-click="scoreList.addScore()">Add score</button>
+		<form>
+		<input id="newScore" type="text"></input>
+		</form>
+	
+		<p>Scores</p>
+		<ul>
+		<li ng-repeat="score in scoreList.scores track by $index">{{score}}</li>
+		</ul>
+	</div>
 </body>
 </html>

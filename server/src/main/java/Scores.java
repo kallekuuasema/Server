@@ -9,19 +9,18 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-@Path("/players")
-public class Players {
+@Path("/scores")
+public class Scores {
 
 	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.TEXT_PLAIN)
 	@POST
-	public String createPlayer(){
-		return "id123";
+	public void createScore(){
+		
 	}
 
 	@Produces(MediaType.TEXT_PLAIN)
     @GET
-    public String getPlayer(@QueryParam("playerName") String playerName) {
-        return "got "+playerName;
+    public String getScores(@QueryParam("playerId") String playerId) {
+        return "got " + playerId;
     }
 }
