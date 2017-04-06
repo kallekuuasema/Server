@@ -5,23 +5,33 @@
 <link rel="stylesheet" type="text/css" href="/stylesheets/styles.css">
 
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.3/angular-route.min.js"></script>
 <script src="index.js"></script>
 
 </head>
 <body>	
 	<div ng-controller="scoreListController as scoreList">
-		<button ng-click="scoreList.loadPlayer()">Load player</button>
 		<form>
-		<input id="playerName" type="text"></input>
+		<p>game name</p>
+		<input id="gameName" type="text"></input>		
+		<p>player name</p>
+		<input id="playerName" type="text"></input>		
+		<p>player id</p>
+		<input id="playerId" type="text"></input>
 		</form>
+		<button ng-click="scoreList.loadPlayer()">Load player</button>
+		</br></br>
+
 		<button ng-click="scoreList.addScore()">Add score</button>
 		<form>
 		<input id="newScore" type="text"></input>
 		</form>
 	
-		<p>Scores</p>
+		<p>Player highscore {{scoreList.playerScore}}</p>
+
+		<p>Highscores</p>
 		<ul>
-		<li ng-repeat="score in scoreList.scores track by $index">{{score}}</li>
+		<li ng-repeat="scoreEntry in scoreList.highScoreEntries track by $index">{{scoreEntry.playerName}} {{scoreEntry.score}}</li>
 		</ul>
 	</div>
 </body>
