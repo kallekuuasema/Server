@@ -1,7 +1,6 @@
 angular.module('scoreList', ['ngRoute']).controller('scoreListController', function ($scope, $route, $routeParams, $location) {
 
     scoreList = this;
-    this.scores = [];
 
     this.playerScore = 0;
     this.highScoreEntries = [];
@@ -21,7 +20,7 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
                 //get scores
                 scoresQuery = "/scores?playerId=" + cachedPlayerId + "&gameName=" + cachedGameName;
                 scoreList.makeRequest("GET", scoresQuery, null, null, function () {
-                    if (this.readyState == 4 && this.status == 200) {                        
+                    if (this.readyState == 4 && this.status == 200) {
                         responseScores = JSON.parse(this.response);
                         scoreList.playerScore = responseScores[0].properties.score;
                         $route.reload();
@@ -42,17 +41,9 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
                         scoreList.playerScore = 0;
                         $route.reload();
                     }
-                    //Failed to create new player. Just print error for now
-                    if (this.readyState == 4 && this.status == 404) {
-                        document.getElementById("playerName").value = "";
-                        document.getElementById("playerId").value = "";
-                        scoreList.playerScore = 0;
-                    }
                 })
             }
         });
-
-        scoreList.refreshHighScores();
     },
 
     scoreList.addScore = function () {
@@ -67,19 +58,44 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
             if (this.readyState == 4) {
                 if (this.status == 200) {
                     scoreList.playerScore = newScore;
-                    $route.reload();
+
+                    //get scores
+                    scoresQuery = "/scores/highscores?gameName=" + cachedGameName;
+                    scoreList.makeRequest("GET", scoresQuery, null, null, function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            responseScores = JSON.parse(this.response);
+                            scoreList.highScoreEntries = [];
+                            for (index = 0; index < responseScores.length; ++index) {
+                                scoreList.highScoreEntries.push({ playerName: responseScores[index].properties.playerName, playerId: responseScores[index].properties.playerId, score: responseScores[index].properties.score });
+                            }
+                            $route.reload();
+                        }
+                    })
                 }
                 else if (this.status == 201) {
                     scoreList.playerScore = newScore;
-                    $route.reload();
+
+                    //get scores
+                    scoresQuery = "/scores/highscores?gameName=" + cachedGameName;
+                    scoreList.makeRequest("GET", scoresQuery, null, null, function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            responseScores = JSON.parse(this.response);
+                            scoreList.highScoreEntries = [];
+                            for (index = 0; index < responseScores.length; ++index) {
+                                scoreList.highScoreEntries.push({ playerName: responseScores[index].properties.playerName, playerId: responseScores[index].properties.playerId, score: responseScores[index].properties.score });
+                            }
+                            $route.reload();
+                        }
+                    })
                 }
                 else if (this.status == 304) {
+                    //Highscore was lower than previous, so nothing changed
                 }
             }
         })
     },
 
-    scoreList.refreshHighScores = function () {
+    scoreList.gameChanged = function () {
         cachedGameName = document.getElementById("gameName").value;
 
         //get scores
@@ -93,8 +109,12 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
                 }
                 $route.reload();
             }
-        })
-    }
+        });
+    },
+
+    scoreList.playerNameChanged = function () {
+        document.getElementById("playerId").value = "";
+    },
 
     scoreList.makeRequest = function (type, path, message, headers, callback) {
         var xhttp = new XMLHttpRequest();

@@ -13,9 +13,9 @@
 	<div ng-controller="scoreListController as scoreList">
 		<form>
 		<p>game name</p>
-		<input id="gameName" type="text"></input>		
+		<input id="gameName" type="text" ng-model = "gameName" ng-change="scoreList.gameChanged()"></input>		
 		<p>player name</p>
-		<input id="playerName" type="text"></input>		
+		<input id="playerName" type="text" ng-model = "playerName" ng-change="scoreList.playerNameChanged()"></input>		
 		<p>player id</p>
 		<input id="playerId" type="text"></input>
 		</form>
