@@ -104,6 +104,27 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
         document.getElementById("playerId").value = "";
     },
 
+    scoreList.deleteScores = function () {
+        cachedGameName = document.getElementById("gameName").value;
+        cachedPlayerId = document.getElementById("playerId").value;
+
+        //get scores
+        scoresQuery = "/scores?playerId=" + cachedPlayerId + "&gameName=" + cachedGameName;
+        scoreList.makeRequest("DELETE", scoresQuery, null, null, function () {
+            if (this.readyState == 4 && this.status == 200) {
+                scoreList.playerScore = 0;
+                //get scores
+                scoresQuery = "/scores?gameName=" + cachedGameName;
+                scoreList.makeRequest("GET", scoresQuery, null, null, function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        scoreList.highScoreEntries = JSON.parse(this.response);
+                        $route.reload();
+                    }
+                });
+            }
+        })
+    },
+
     scoreList.makeRequest = function (type, path, message, headers, callback) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = callback;

@@ -6,6 +6,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -130,7 +131,44 @@ public class Scores {
 				scoreEntryList.add(scoreEntry);
 			}
 			
-			return Response.ok().type(MediaType.APPLICATION_JSON).entity(scoreEntryList).build();
+			return Response.status(HttpServletResponse.SC_OK).type(MediaType.APPLICATION_JSON).entity(scoreEntryList).build();
+		}else{
+			//Return not found
+			return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
+		}
+    }
+	
+	@Produces(MediaType.TEXT_PLAIN)
+    @DELETE
+    public Response deleteScores(@QueryParam("playerId") String playerId, @QueryParam("gameName") String gameName) {
+		//Compose query filters
+		Vector<Filter> queryFilters = new Vector<Filter>();
+		if(null!=playerId && playerId.length() > 0){
+			queryFilters.add(new FilterPredicate("playerId", FilterOperator.EQUAL, playerId));
+		}
+		if(null!=gameName && gameName.length() > 0){
+			queryFilters.add(new FilterPredicate("gameName", FilterOperator.EQUAL, gameName));
+		}
+		
+		//Return bad request if both playerId and gameName are missing
+		if(queryFilters.size() != 2){
+			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+		}
+		
+		//Find all scores from datastore
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+		Query query = new Query("Score").setFilter(CompositeFilterOperator.and(queryFilters));
+		PreparedQuery preparedQuery = datastore.prepare(query);
+		
+		java.util.List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+
+		if(null!=result){
+			for(int index=0; index < result.size(); ++index){
+				Entity tmp = result.get(index);
+				datastore.delete(tmp.getKey());
+			}			
+			return Response.status(HttpServletResponse.SC_OK).build();
 		}else{
 			//Return not found
 			return Response.status(HttpServletResponse.SC_NOT_FOUND).build();

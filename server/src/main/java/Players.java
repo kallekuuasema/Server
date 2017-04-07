@@ -47,9 +47,9 @@ public class Players {
 	@Produces(MediaType.TEXT_PLAIN)
     @GET
     public Response getPlayer(@QueryParam("playerId") String playerId) {
-		//Return bad request for empty names
+		//Return not found for empty names
 		if(null==playerId || playerId.length() == 0){
-			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+			return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
 		}
 	
 		//Find entry from datastore
@@ -60,7 +60,7 @@ public class Players {
 		
 		if(null!=result){
 			//Return player name
-			return Response.ok().type(MediaType.TEXT_PLAIN).entity((String)result.getProperty("playerName")).build();
+			return Response.status(HttpServletResponse.SC_OK).type(MediaType.TEXT_PLAIN).entity((String)result.getProperty("playerName")).build();
 		}else{
 			//Return not found
 			return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
