@@ -14,6 +14,7 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -34,10 +35,23 @@ public class Scores {
 	@Produces(MediaType.TEXT_PLAIN)
 	@POST
 	public Response createScore(ScoreMessage scoreMessage){
+		//Validate request
+		if(null==scoreMessage){
+			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+		}
+		if(null==scoreMessage.playerId || scoreMessage.playerId.length() == 0){
+			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+		}
+		if(null==scoreMessage.gameName || scoreMessage.gameName.length() == 0){
+			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+		}
+		if(0==scoreMessage.score ){
+			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+		}
+		
 		//Find entry from datastore
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Query query = new Query("Score").setFilter(CompositeFilterOperator.and(new FilterPredicate("playerId", FilterOperator.EQUAL, scoreMessage.playerId), new FilterPredicate("gameName", FilterOperator.EQUAL, scoreMessage.gameName)));
-		
 		PreparedQuery preparedQuery = datastore.prepare(query);
 		Entity result = preparedQuery.asSingleEntity();
 
@@ -67,37 +81,39 @@ public class Scores {
 
 	@Produces(MediaType.APPLICATION_JSON)
     @GET
-    public Response getScores(@QueryParam("playerId") String playerId, @QueryParam("gameName") String gameName) {
-		//Find all scores from datastore
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		Query query = new Query("Score").setFilter(CompositeFilterOperator.and(new FilterPredicate("playerId", FilterOperator.EQUAL, playerId), new FilterPredicate("gameName", FilterOperator.EQUAL, gameName)));
-		PreparedQuery preparedQuery = datastore.prepare(query);
+    public Response getHighScores(@QueryParam("playerName") String playerName, @QueryParam("playerId") String playerId, @QueryParam("gameName") String gameName, @QueryParam("score") long score) {
 		
-		Entity result = preparedQuery.asSingleEntity();
-		
-		ScoreMessage ret = new ScoreMessage();
-		ret.playerName = (String)result.getProperty("playerName");
-		ret.playerId = (String)result.getProperty("playerId");
-		ret.gameName = (String)result.getProperty("gameName");
-		ret.score = (long)result.getProperty("score");
-		
-		if(null!=result){
-			//Return scores as array
-			return Response.ok().type(MediaType.APPLICATION_JSON).entity(ret).build();
-		}else{
-			//Return not found
-			return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
+		//Compose query filters
+		Vector<Filter> queryFilters = new Vector<Filter>();
+		if(null!=playerName && playerName.length() > 0){
+			queryFilters.add(new FilterPredicate("playerName", FilterOperator.EQUAL, playerName));
 		}
-    }
-	
-	@Produces(MediaType.APPLICATION_JSON)
-    @GET
-	@Path("/highscores")
-    public Response getHighScores(@QueryParam("gameName") String gameName) {
+		if(null!=playerId && playerId.length() > 0){
+			queryFilters.add(new FilterPredicate("playerId", FilterOperator.EQUAL, playerId));
+		}
+		if(null!=gameName && gameName.length() > 0){
+			queryFilters.add(new FilterPredicate("gameName", FilterOperator.EQUAL, gameName));
+		}
+		if(0!=score){
+			queryFilters.add(new FilterPredicate("score", FilterOperator.EQUAL, score));
+		}
+		
+		//Return bad request for empty queries
+		if(queryFilters.size() == 0){
+			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+		}
+		
 		//Find all scores from datastore
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		Query query = new Query("Score").setFilter(new FilterPredicate("gameName", FilterOperator.EQUAL, gameName));
-		PreparedQuery preparedQuery = datastore.prepare(query);
+		PreparedQuery preparedQuery;
+
+		if(queryFilters.size() == 1){
+			Query query = new Query("Score").setFilter(queryFilters.get(0));
+			preparedQuery = datastore.prepare(query);
+		}else{
+			Query query = new Query("Score").setFilter(CompositeFilterOperator.and(queryFilters));
+			preparedQuery = datastore.prepare(query);
+		}
 		
 		java.util.List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withDefaults());
 

@@ -27,6 +27,11 @@ public class Players {
 	@Produces(MediaType.TEXT_PLAIN)
 	@POST
 	public Response createPlayer(PlayerMessage playerMessage){
+		//Return bad request for empty names
+		if(null==playerMessage.playerName || playerMessage.playerName.length() == 0){
+			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+		}
+		
 		//Create new player
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();		
 		String randomUUID = ""+UUID.randomUUID();
@@ -42,7 +47,11 @@ public class Players {
 	@Produces(MediaType.TEXT_PLAIN)
     @GET
     public Response getPlayer(@QueryParam("playerId") String playerId) {
-
+		//Return bad request for empty names
+		if(null==playerId || playerId.length() == 0){
+			return Response.status(HttpServletResponse.SC_BAD_REQUEST).build();
+		}
+	
 		//Find entry from datastore
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Query query = new Query("Player").setFilter(new FilterPredicate("playerId", FilterOperator.EQUAL, playerId));
