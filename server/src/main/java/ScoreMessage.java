@@ -9,5 +9,5 @@ public class ScoreMessage
   public String playerName;
   public String playerId;
   public String gameName;
-  public int score;
+  public long score;
 }

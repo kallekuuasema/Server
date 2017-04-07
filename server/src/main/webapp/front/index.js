@@ -21,8 +21,8 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
                 scoresQuery = "/scores?playerId=" + cachedPlayerId + "&gameName=" + cachedGameName;
                 scoreList.makeRequest("GET", scoresQuery, null, null, function () {
                     if (this.readyState == 4 && this.status == 200) {
-                        responseScores = JSON.parse(this.response);
-                        scoreList.playerScore = responseScores[0].properties.score;
+                        responseScore = JSON.parse(this.response);
+                        scoreList.playerScore = responseScore.score;
                         $route.reload();
                     }
                 })
@@ -63,11 +63,12 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
                     scoresQuery = "/scores/highscores?gameName=" + cachedGameName;
                     scoreList.makeRequest("GET", scoresQuery, null, null, function () {
                         if (this.readyState == 4 && this.status == 200) {
-                            responseScores = JSON.parse(this.response);
-                            scoreList.highScoreEntries = [];
-                            for (index = 0; index < responseScores.length; ++index) {
-                                scoreList.highScoreEntries.push({ playerName: responseScores[index].properties.playerName, playerId: responseScores[index].properties.playerId, score: responseScores[index].properties.score });
-                            }
+                            scoreList.highScoreEntries = JSON.parse(this.response);
+                            //responseScores = JSON.parse(this.response);
+                            //scoreList.highScoreEntries = [];
+                            //for (index = 0; index < responseScores.length; ++index) {
+                            //    scoreList.highScoreEntries.push({ playerName: responseScores[index].properties.playerName, playerId: responseScores[index].properties.playerId, score: responseScores[index].properties.score });
+                            //}
                             $route.reload();
                         }
                     })
@@ -79,11 +80,12 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
                     scoresQuery = "/scores/highscores?gameName=" + cachedGameName;
                     scoreList.makeRequest("GET", scoresQuery, null, null, function () {
                         if (this.readyState == 4 && this.status == 200) {
-                            responseScores = JSON.parse(this.response);
-                            scoreList.highScoreEntries = [];
-                            for (index = 0; index < responseScores.length; ++index) {
-                                scoreList.highScoreEntries.push({ playerName: responseScores[index].properties.playerName, playerId: responseScores[index].properties.playerId, score: responseScores[index].properties.score });
-                            }
+                            scoreList.highScoreEntries = JSON.parse(this.response);
+                            //responseScores = JSON.parse(this.response);
+                            //scoreList.highScoreEntries = [];
+                            //for (index = 0; index < responseScores.length; ++index) {
+                            //    scoreList.highScoreEntries.push({ playerName: responseScores[index].properties.playerName, playerId: responseScores[index].properties.playerId, score: responseScores[index].properties.score });
+                            //}
                             $route.reload();
                         }
                     })
@@ -102,11 +104,12 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
         scoresQuery = "/scores/highscores?gameName=" + cachedGameName;
         scoreList.makeRequest("GET", scoresQuery, null, null, function () {
             if (this.readyState == 4 && this.status == 200) {
-                responseScores = JSON.parse(this.response);
-                scoreList.highScoreEntries = [];
-                for (index = 0; index < responseScores.length; ++index) {
-                    scoreList.highScoreEntries.push({ playerName: responseScores[index].properties.playerName, playerId: responseScores[index].properties.playerId, score: responseScores[index].properties.score });
-                }
+                scoreList.highScoreEntries = JSON.parse(this.response);
+                //responseScores = JSON.parse(this.response);
+                //scoreList.highScoreEntries = [];
+                //for (index = 0; index < responseScores.length; ++index) {
+                //    scoreList.highScoreEntries.push({ playerName: responseScores[index].properties.playerName, playerId: responseScores[index].properties.playerId, score: responseScores[index].properties.score });
+                //}
                 $route.reload();
             }
         });

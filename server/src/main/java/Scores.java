@@ -22,6 +22,7 @@ import com.google.appengine.api.datastore.FetchOptions.Builder;
 import com.google.appengine.api.datastore.Query.CompositeFilter;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
 import java.util.Arrays;
+import java.util.Vector;
 
 import javax.ws.rs.core.Response;
 import javax.servlet.http.HttpServletResponse;
@@ -72,11 +73,17 @@ public class Scores {
 		Query query = new Query("Score").setFilter(CompositeFilterOperator.and(new FilterPredicate("playerId", FilterOperator.EQUAL, playerId), new FilterPredicate("gameName", FilterOperator.EQUAL, gameName)));
 		PreparedQuery preparedQuery = datastore.prepare(query);
 		
-		java.util.List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+		Entity result = preparedQuery.asSingleEntity();
+		
+		ScoreMessage ret = new ScoreMessage();
+		ret.playerName = (String)result.getProperty("playerName");
+		ret.playerId = (String)result.getProperty("playerId");
+		ret.gameName = (String)result.getProperty("gameName");
+		ret.score = (long)result.getProperty("score");
 		
 		if(null!=result){
 			//Return scores as array
-			return Response.ok().type(MediaType.APPLICATION_JSON).entity(result).build();
+			return Response.ok().type(MediaType.APPLICATION_JSON).entity(ret).build();
 		}else{
 			//Return not found
 			return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
@@ -93,10 +100,21 @@ public class Scores {
 		PreparedQuery preparedQuery = datastore.prepare(query);
 		
 		java.util.List<Entity> result = preparedQuery.asList(FetchOptions.Builder.withDefaults());
-		
+
 		if(null!=result){
 			//Return scores as array
-			return Response.ok().type(MediaType.APPLICATION_JSON).entity(result).build();
+			Vector<ScoreMessage> scoreEntryList = new Vector<ScoreMessage>();
+			for(int index=0; index < result.size(); ++index){
+				Entity tmp = result.get(index);
+				ScoreMessage scoreEntry = new ScoreMessage();
+				scoreEntry.playerName = (String)tmp.getProperty("playerName");
+				scoreEntry.playerId = (String)tmp.getProperty("playerId");
+				scoreEntry.gameName = (String)tmp.getProperty("gameName");
+				scoreEntry.score = (long)tmp.getProperty("score");
+				scoreEntryList.add(scoreEntry);
+			}
+			
+			return Response.ok().type(MediaType.APPLICATION_JSON).entity(scoreEntryList).build();
 		}else{
 			//Return not found
 			return Response.status(HttpServletResponse.SC_NOT_FOUND).build();
