@@ -2,7 +2,7 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
 
     scoreList = this;
 
-    this.playerScore = 0;
+    this.playerScoreEntries = [];
     this.highScoreEntries = [];
 
     scoreList.loadPlayer = function () {
@@ -17,15 +17,7 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
             if (this.readyState == 4 && this.status == 200) {
                 document.getElementById("playerName").value = this.response;
 
-                //get scores
-                scoresQuery = "/scores?playerId=" + cachedPlayerId + "&gameName=" + cachedGameName;
-                scoreList.makeRequest("GET", scoresQuery, null, null, function () {
-                    if (this.readyState == 4 && this.status == 200) {
-                        responseScore = JSON.parse(this.response);
-                        scoreList.playerScore = responseScore.score;
-                        $route.reload();
-                    }
-                })
+                scoreList.refreshPlayerScores();
             }
             //No player with that id
             if (this.readyState == 4 && this.status == 404) {
@@ -38,7 +30,7 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
                         document.getElementById("playerId").value = this.response;
 
                         //Create empty score list
-                        scoreList.playerScore = 0;
+                        scoreList.playerScoreEntries = [];
                         $route.reload();
                     }
                 })
@@ -57,28 +49,15 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
         this.makeRequest("POST", "/scores", message, headers, function () {
             if (this.readyState == 4) {
                 if (this.status == 200) {
-                    scoreList.playerScore = newScore;
 
-                    //get scores
-                    scoresQuery = "/scores?gameName=" + cachedGameName;
-                    scoreList.makeRequest("GET", scoresQuery, null, null, function () {
-                        if (this.readyState == 4 && this.status == 200) {
-                            scoreList.highScoreEntries = JSON.parse(this.response);
-                            $route.reload();
-                        }
-                    })
+                    scoreList.refreshPlayerScores();
+
+                    scoreList.refreshGameScores();
                 }
                 else if (this.status == 201) {
-                    scoreList.playerScore = newScore;
+                    scoreList.refreshPlayerScores();
 
-                    //get scores
-                    scoresQuery = "/scores?gameName=" + cachedGameName;
-                    scoreList.makeRequest("GET", scoresQuery, null, null, function () {
-                        if (this.readyState == 4 && this.status == 200) {
-                            scoreList.highScoreEntries = JSON.parse(this.response);
-                            $route.reload();
-                        }
-                    })
+                    scoreList.refreshGameScores();
                 }
                 else if (this.status == 304) {
                     //Highscore was lower than previous, so nothing changed
@@ -90,14 +69,7 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
     scoreList.gameChanged = function () {
         cachedGameName = document.getElementById("gameName").value;
 
-        //get scores
-        scoresQuery = "/scores?gameName=" + cachedGameName;
-        scoreList.makeRequest("GET", scoresQuery, null, null, function () {
-            if (this.readyState == 4 && this.status == 200) {
-                scoreList.highScoreEntries = JSON.parse(this.response);
-                $route.reload();
-            }
-        });
+        scoreList.refreshGameScores();
     },
 
     scoreList.playerNameChanged = function () {
@@ -108,19 +80,39 @@ angular.module('scoreList', ['ngRoute']).controller('scoreListController', funct
         cachedGameName = document.getElementById("gameName").value;
         cachedPlayerId = document.getElementById("playerId").value;
 
-        //get scores
+        //delete scores
         scoresQuery = "/scores?playerId=" + cachedPlayerId + "&gameName=" + cachedGameName;
         scoreList.makeRequest("DELETE", scoresQuery, null, null, function () {
             if (this.readyState == 4 && this.status == 200) {
-                scoreList.playerScore = 0;
-                //get scores
-                scoresQuery = "/scores?gameName=" + cachedGameName;
-                scoreList.makeRequest("GET", scoresQuery, null, null, function () {
-                    if (this.readyState == 4 && this.status == 200) {
-                        scoreList.highScoreEntries = JSON.parse(this.response);
-                        $route.reload();
-                    }
-                });
+                scoreList.playerScoreEntries = [];
+                scoreList.refreshGameScores();
+            }
+        })
+    },
+
+    scoreList.refreshGameScores = function () {
+        cachedGameName = document.getElementById("gameName").value;
+
+        //get game scores
+        scoresQuery = "/scores?gameName=" + cachedGameName;
+        scoreList.makeRequest("GET", scoresQuery, null, null, function () {
+            if (this.readyState == 4 && this.status == 200) {
+                scoreList.highScoreEntries = JSON.parse(this.response);
+                console.log(scoreList.highScoreEntries);
+                $route.reload();
+            }
+        })
+    },
+    scoreList.refreshPlayerScores = function () {
+        cachedPlayerId = document.getElementById("playerId").value;
+
+        //get player scores
+        scoresQuery = "/scores?playerId=" + cachedPlayerId;
+        scoreList.makeRequest("GET", scoresQuery, null, null, function () {
+            if (this.readyState == 4 && this.status == 200) {
+                scoreList.playerScoreEntries = JSON.parse(this.response);
+                console.log(scoreList.playerScoreEntries);
+                $route.reload();
             }
         })
     },

@@ -28,9 +28,13 @@
 		</form>
 	
 		<button ng-click="scoreList.deleteScores()">Delete scores</button>
-		<p>Player highscore {{scoreList.playerScore}}</p>
 
-		<p>Highscores</p>
+		<p>Player highscores</p>
+		<ul>
+		<li ng-repeat="scoreEntry in scoreList.playerScoreEntries track by $index">{{scoreEntry.gameName}} {{scoreEntry.score}}</li>
+		</ul>
+		
+		<p>Game highscores</p>
 		<ul>
 		<li ng-repeat="scoreEntry in scoreList.highScoreEntries track by $index">{{scoreEntry.playerName}} {{scoreEntry.score}}</li>
 		</ul>
